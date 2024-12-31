@@ -4,7 +4,7 @@
     package = config.lib.test.mkStubPackage { };
 
     themes = {
-      "catppuccin-mocha" = {
+      catppuccin-mocha = {
         palette = [
           "0=#45475a"
           "1=#f38ba8"
