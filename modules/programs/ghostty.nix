@@ -114,10 +114,13 @@ in {
         keybind = lib.mkBefore [ "clear" ];
       };
 
+      # MacOS also supports XDG configuration directory, so we use it for both
+      # Linux and macOS to reduce complexity
       xdg.configFile = lib.mkMerge [
         {
           "ghostty/config" = lib.mkIf (cfg.settings != { }) {
             source = keyValue.generate "ghostty-config" cfg.settings;
+            onChange = "${lib.getExe cfg.package} +validate-config";
           };
         }
 
@@ -138,13 +141,14 @@ in {
           src = cfg.package;
           file = "share/bat/syntaxes/ghostty.sublime-syntax";
         };
-        config.map-syntax = [ "*/ghostty/config:Ghostty Config" ];
+        config.map-syntax =
+          [ "${config.xdg.configHome}/ghostty/config:Ghostty Config" ];
       };
     })
 
     (lib.mkIf cfg.enableBashIntegration {
-      # Make order 101 to be placed exactly after bash completions, as Ghostty documentation suggests
-      # sourcing the script as soon as possible
+      # Make order 101 to be placed exactly after bash completions, as Ghostty
+      # documentation suggests sourcing the script as soon as possible
       programs.bash.initExtra = lib.mkOrder 101 ''
         if [[ -n "''${GHOSTTY_RESOURCES_DIR}" ]]; then
           builtin source "''${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
@@ -163,7 +167,7 @@ in {
     (lib.mkIf cfg.enableZshIntegration {
       programs.zsh.initExtra = ''
         if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
-          source $GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration
+          source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
         fi
       '';
     })
